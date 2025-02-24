@@ -1,8 +1,11 @@
 import express from 'express';
 import logger from './services/logger.js'
 import images from './services/controler.js'
+import {startAutoUpdate} from "./services/gitHandler.js";
 
 const app = express();
+
+startAutoUpdate();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
