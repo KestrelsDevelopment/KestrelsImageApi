@@ -1,19 +1,23 @@
 import express from 'express';
+import logger from './services/logger.js'
+import images from './services/controler.js'
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-
+// Set /* to be sent to images controler
+app.use('/*', images);
 
 // Catch-all middleware to handle 404 errors
 app.use((req, res, next) => {
+    logger.http(`returned 404 to source "${req.ip}" on uri "${req.url}"`)
     res.status(404).json({ error: 'Not Found' });
 });
 
 // Setup of the webserver
 const PORT = process.env.API_PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server is running on port "${PORT}"`);
 });
