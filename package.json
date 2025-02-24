@@ -1,0 +1,30 @@
+{
+  "name": "kestrelsimageapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KestrelsDevelopment/KestrelsImageApi.git"
+  },
+  "keywords": [],
+  "author": "Kessandra M. Winkelnkemper, Annika Leonie Keggenhoff",
+  "license": "Apache 2.0",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/KestrelsDevelopment/KestrelsImageApi/issues"
+  },
+  "homepage": "https://github.com/KestrelsDevelopment/KestrelsImageApi#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
