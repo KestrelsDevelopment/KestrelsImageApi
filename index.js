@@ -1,7 +1,7 @@
 import express from 'express';
 import logger from './services/logger.js'
 import images from './services/controler.js'
-import {startAutoUpdate} from "./services/gitHandler.js";
+import {startAutoUpdate} from "./services/imageHandler.js";
 
 const app = express();
 
