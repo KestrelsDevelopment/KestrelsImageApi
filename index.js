@@ -10,6 +10,10 @@ startAutoUpdate();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Place this at the beginning of your middleware stack
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
+
 // Set /* to be sent to images controler
 app.use('/*', images);
 

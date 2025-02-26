@@ -1,34 +1,14 @@
 import simpleGit from "simple-git";
-import redis from "redis";
 import logger from '../services/logger.js'
 import fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
+import establishRedis from '../services/redis.js'
 
 // set paths
 const localPath = process.env.REPO_PATH || "./data/repo";
 const remotePath = process.env.REPO_URL || "https://github.com/KestrelsDevelopment/KestrelsNest";
-
-// set redis values
-const redisHost = process.env.REDIS_HOST || '127.0.0.1';
-const redisPort = process.env.REDIS_PORT || 6379;
-
-async function establishRedis() {
-    //setup redis
-    const redisClient = new redis.createClient({
-        socket: {
-            host: redisHost,
-            port: redisPort
-        }
-    });
-
-    redisClient.on('error', (err) => logger.error('Redis Client Error', err));
-    
-    logger.debug('Redis Client Ready');
-    
-    return redisClient;
-}
 
 async function cloneRepo() {
     if (fs.existsSync(localPath)) {
@@ -63,7 +43,7 @@ async function pullRepo() {
 async function pushRedis(redisClient, key, data) {
     // Connection to redis is opened
     await redisClient.connect({});
-    logger.debug(`Redis Client Connected to ${redisHost}:${redisPort}`);
+    logger.debug(`Redis Client Connected to redis cache`);
 
     // Push data to Redis
     await  redisClient.hSet(key, data);
