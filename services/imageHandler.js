@@ -2,8 +2,9 @@ import simpleGit from "simple-git";
 import redis from "redis";
 import logger from '../services/logger.js'
 import fs from 'fs';
-const fsPromises = require('fs').promises;
-const path = require('path');
+import * as fsPromises from 'fs/promises';
+import path from 'path';
+import sharp from 'sharp';
 
 
 // set paths
@@ -12,7 +13,7 @@ const remotePath = process.env.REPO_URL || "https://github.com/KestrelsDevelopme
 
 // set redis values
 const redisHost = process.env.REDIS_HOST || '127.0.0.1';
-const redisPort = process.env.REDIS_PORT || 637;
+const redisPort = process.env.REDIS_PORT || 6379;
 
 
 async function establishRedis() {
@@ -61,13 +62,11 @@ async function pullRepo() {
     }
 }
 
-async function pushRedis(redisClient, imageName, data) {
+async function pushRedis(redisClient, key, data) {
     // Connection to redis is opened
     await redisClient.connect({});
     logger.debug(`Redis Client Connected to ${redisHost}:${redisPort}`);
-    
-    let key = `image:${imageName}`;
-    
+
     // Push data to Redis
     await  redisClient.hSet(key, data);
     logger.debug(`Pushed Image ${key} to redis`);
@@ -89,13 +88,63 @@ async function getImagePaths(dir) {
 
             if (entry.isDirectory()) {
                 dirs.push(fullPath);
-            } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(entry.name)) {
+            } else if (
+                /\.(jpg|png|webp)$/i.test(entry.name) &&
+                !/^(favicon|apple-touch-icon|android-chrome)/i.test(entry.name)
+            ) {
                 imageFiles.push(fullPath);
             }
         }
     }
 
     return imageFiles;
+}
+
+
+async function processImages(redisClient, imagePath) {
+    try {
+        // Read the image file from disk.
+        let imageBuffer = await fsPromises.readFile(imagePath);
+        // Extract the image name (without extension) for the Redis key.
+        let imageName = path.basename(imagePath, path.extname(imagePath));
+        let redisKey = `image:${imageName}`;
+
+        // Retrieve the metadata to check the original image's dimensions.
+        let metadata = await sharp(imageBuffer).metadata();
+
+        // Convert the original image to AVIF format.
+        let originalAvifBuffer = await sharp(imageBuffer).avif().toBuffer();
+        let imageData = {
+            'original': originalAvifBuffer.toString('base64')
+        };
+
+        // Define target resolutions (square dimensions).
+        let targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
+
+        // Process each target size.
+        for (let size of targetSizes) {
+            let label = `${size}x${size}`;
+
+            // If the original image is smaller than the target resolution,
+            // use the original AVIF (do not upscale).
+            if (metadata.width <= size && metadata.height <= size) {
+                imageData[label] = imageData['original'];
+            } else {
+                // Otherwise, resize the image while preserving aspect ratio.
+                let resizedBuffer = await sharp(imageBuffer)
+                    .resize(size, size, { fit: 'inside', withoutEnlargement: true })
+                    .avif()
+                    .toBuffer();
+                imageData[label] = resizedBuffer.toString('base64');
+            }
+        }
+
+        // Push the image data into Redis as a hash.
+        await pushRedis(redisClient, redisKey, imageData);
+        logger.debug(`Successfully processed and pushed image ${imageName} with resolutions: original, ${targetSizes.map(s => `${s}x${s}`).join(', ')}`);
+    } catch (err) {
+        logger.error(`Error processing image ${imagePath}: ${err}`);
+    }
 }
 
 async function runAutoUpdate() {
@@ -106,7 +155,10 @@ async function runAutoUpdate() {
         
         let redis = await establishRedis();
         let imagePaths = await getImagePaths(localPath);
-
+        logger.debug(`started Conversion`);
+        for (let imagePath of imagePaths) {
+            await processImages(redis, imagePath);
+        }
         
     }
 
@@ -116,7 +168,16 @@ export async function startAutoUpdate(interval = 300000) {
     
     // initializing repo if not already initialized
     await cloneRepo();
-    
+    // initially fill redis
+
+    let redis = await establishRedis();
+    let imagePaths = await getImagePaths(localPath);
+    logger.debug(`started initial Conversion`);
+    for (let imagePath of imagePaths) {
+        await processImages(redis, imagePath);
+    }
+
+
     // Puling the Repo
     await runAutoUpdate();
 
