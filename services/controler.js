@@ -39,10 +39,24 @@ async function getImage({ name, resolution: size }) {
 
 // Parse image data from the URL
 const getImageData = (uri) => {
+    // Remove any leading slash
     const trimmed = uri.startsWith('/') ? uri.slice(1) : uri;
-    let [name, resolution] = trimmed.split('?');
-    // Remove file extension if it exists
+
+    // Split the URI on "?" to separate the filename from the query
+    let [name, query] = trimmed.split('?');
+
+    // Remove file extension if it exists (e.g., .png, .avif)
     name = name.replace(/\.[^.]+$/, "");
+
+    let resolution;
+    if (query) {
+        // Expecting query to be in the format "size=60"
+        const match = query.match(/size=(\d+)/);
+        if (match) {
+            resolution = match[1];
+        }
+    }
+
     return { name, resolution };
 };
 
