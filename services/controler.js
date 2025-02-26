@@ -1,69 +1,55 @@
-import establishRedis from '../services/redis.js'
-import logger from '../services/logger.js'
+import establishRedis from '../services/redis.js';
+import logger from '../services/logger.js';
 
-// get image from redis
-async function getImage(imageNameOBJ) {
-    let redisConnection = await establishRedis();
-    let imageName = imageNameOBJ.name;
-    let redisKey = `image:${imageName}`;
-    let size = imageNameOBJ.resolution;
-    let resolution
-
-    // set Resolution depending on request
-    if (size === undefined) {
-        resolution = 'original';
-    } else {
-        resolution = `${size}x${size}`;
-    }
+// Retrieve image from Redis and return binary Buffer
+async function getImage({ name, resolution: size }) {
+    const redisConnection = await establishRedis();
+    const redisKey = `image:${name}`;
+    const resolution = size ? `${size}x${size}` : 'original';
 
     try {
         await redisConnection.connect();
-        // Retrieve the Base64 encoded image data from Redis.
-        let base64Image = await redisConnection.hGet(redisKey, resolution);
+        const base64Image = await redisConnection.hGet(redisKey, resolution);
         if (!base64Image) {
             logger.error(`No image found for ${redisKey} at resolution ${resolution}`);
             return null;
         }
-
-        await redisConnection.disconnect();
-        // Convert the Base64 string back to binary (Buffer) and return it.
         return Buffer.from(base64Image, 'base64');
-
     } catch (err) {
-        logger.error(`Error retrieving image ${imageName} at resolution ${resolution}: ${err}`);
+        logger.error(`Error retrieving image ${name} at resolution ${resolution}: ${err}`);
         return null;
-    }}
+    } finally {
+        await redisConnection.disconnect();
+    }
+}
 
-async function getImageData(uri) {
-    // Remove a leading slash if present
+// Parse image data from the URL
+const getImageData = (uri) => {
     const trimmed = uri.startsWith('/') ? uri.slice(1) : uri;
-    // Split the string at the "?" character
     const [name, resolution] = trimmed.split('?');
     return { name, resolution };
-}
+};
 
+// Express handler to serve images
 const images = async (req, res) => {
+    // Log the request with the source IP and request path
+    logger.debug(`Incoming request from ${req.ip} for ${req.originalUrl}`);
 
     try {
-        let reqURI = req.originalUrl;
+        const imageData = getImageData(req.originalUrl);
+        const image = await getImage(imageData);
 
-        let ImageNameOBJ = await getImageData(reqURI);
+        if (!image) {
+            return res.status(404).send('Image not found');
+        }
 
-        let image = await getImage(ImageNameOBJ);
-        // Set headers so the browser knows the content is an AVIF image.
         res.set('Content-Type', 'image/avif');
-
-        // Optionally, add caching headers if needed.
         res.set('Cache-Control', 'public, max-age=3600');
-
-        // Send the binary image data.
-        res.status(200).send(image);
+        return res.status(200).send(image);
     } catch (error) {
-        console.error('Error retrieving image:', error);
-        res.status(500).send('Internal Server Error');
+        logger.error('Error retrieving image:', error);
+        return res.status(500).send('Internal Server Error');
     }
+};
 
-
-}
-
-export default images
+export default images;
