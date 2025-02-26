@@ -40,9 +40,12 @@ async function getImage({ name, resolution: size }) {
 // Parse image data from the URL
 const getImageData = (uri) => {
     const trimmed = uri.startsWith('/') ? uri.slice(1) : uri;
-    const [name, resolution] = trimmed.split('?');
+    let [name, resolution] = trimmed.split('?');
+    // Remove file extension if it exists
+    name = name.replace(/\.[^.]+$/, "");
     return { name, resolution };
 };
+
 
 // Express handler to serve images with request logging
 const images = async (req, res) => {
