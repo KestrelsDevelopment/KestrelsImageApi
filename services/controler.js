@@ -1,6 +1,5 @@
 import logger from '../services/logger.js'
 
-
 const images = (req,res)=>{
     let reqURI = req.originalUrl;
     

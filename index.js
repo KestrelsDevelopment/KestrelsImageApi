@@ -15,7 +15,7 @@ app.use('/*', images);
 
 // Catch-all middleware to handle 404 errors
 app.use((req, res, next) => {
-    logger.http(`returned 404 to source "${req.ip}" on uri "${req.url}"`)
+    logger.http(`returned 404 to source "${req.ip}" on URI "${req.url}"`)
     res.status(404).json({ error: 'Not Found' });
 });
 

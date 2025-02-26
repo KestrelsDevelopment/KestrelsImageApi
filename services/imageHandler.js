@@ -6,7 +6,6 @@ import * as fsPromises from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
 
-
 // set paths
 const localPath = process.env.REPO_PATH || "./data/repo";
 const remotePath = process.env.REPO_URL || "https://github.com/KestrelsDevelopment/KestrelsNest";
@@ -14,7 +13,6 @@ const remotePath = process.env.REPO_URL || "https://github.com/KestrelsDevelopme
 // set redis values
 const redisHost = process.env.REDIS_HOST || '127.0.0.1';
 const redisPort = process.env.REDIS_PORT || 6379;
-
 
 async function establishRedis() {
     //setup redis
@@ -33,17 +31,18 @@ async function establishRedis() {
 }
 
 async function cloneRepo() {
-    if (!fs.existsSync(localPath)) {
-        try {
-            logger.debug("Repository not found locally. Cloning...");
-            const git = simpleGit();
-            await git.clone(remotePath, localPath);
-            logger.debug("Repository cloned successfully.");
-        } catch (err) {
-            logger.error(`Error cloning git repository: ${err}`);
-        }
-    } else {
+    if (fs.existsSync(localPath)) {
         logger.debug("Repository already exists locally. Skipping clone.");
+        return;
+    }
+    
+    try {
+        logger.debug("Repository not found locally. Cloning...");
+        const git = simpleGit();
+        await git.clone(remotePath, localPath);
+        logger.debug("Repository cloned successfully.");
+    } catch (err) {
+        logger.error(`Error cloning git repository: ${err}`);
     }
 }
 
@@ -55,7 +54,6 @@ async function pullRepo() {
 
         // Check if there are changes based on the summary or files updated.
         return result && result.summary && (result.summary.changes > 0 || (result.files && result.files.length > 0));
-        
     } catch (err) {
         logger.error(`Error Pulling git repository: ${err}`);
         return false;
@@ -129,14 +127,14 @@ async function processImages(redisClient, imagePath) {
             // use the original AVIF (do not upscale).
             if (metadata.width <= size && metadata.height <= size) {
                 imageData[label] = imageData['original'];
-            } else {
-                // Otherwise, resize the image while preserving aspect ratio.
-                let resizedBuffer = await sharp(imageBuffer)
-                    .resize(size, size, { fit: 'inside', withoutEnlargement: true })
-                    .avif()
-                    .toBuffer();
-                imageData[label] = resizedBuffer.toString('base64');
-            }
+                continue;
+            } 
+            // Otherwise, resize the image while preserving aspect ratio.
+            let resizedBuffer = await sharp(imageBuffer)
+                .resize(size, size, { fit: 'inside', withoutEnlargement: true })
+                .avif()
+                .toBuffer();
+            imageData[label] = resizedBuffer.toString('base64');
         }
 
         // Push the image data into Redis as a hash.
@@ -152,14 +150,12 @@ async function runAutoUpdate() {
     // check for updates
     let changes = await pullRepo();
     if (changes) {
-        
         let redis = await establishRedis();
         let imagePaths = await getImagePaths(localPath);
         logger.debug(`started Conversion`);
         for (let imagePath of imagePaths) {
             await processImages(redis, imagePath);
         }
-        
     }
 
 }
