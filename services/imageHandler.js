@@ -7,9 +7,7 @@ import sharp from "sharp";
 import establishRedis from "../services/redis.js";
 
 const localPath = process.env.REPO_PATH || "./data/repo";
-const remotePath =
-    process.env.REPO_URL ||
-    "https://github.com/KestrelsDevelopment/KestrelsNest";
+const remotePath = process.env.REPO_URL || "https://github.com/KestrelsDevelopment/KestrelsNest";
 
 async function cloneRepo() {
     if (fs.existsSync(localPath)) {
@@ -117,14 +115,18 @@ async function processImages(redisClient, imagePath) {
     }
 }
 
+async function convertImages(initial, redis) {
+    const imagePaths = await getImagePaths(localPath);
+    logger.debug(initial ? "Started initial conversion" : "Started conversion for updated images");
+    await Promise.all(
+        imagePaths.map((imagePath) => processImages(redis, imagePath))
+    ).finally(() => redis.disconnect());
+}
+
 async function runAutoUpdate(redisClient) {
     const changes = await pullRepo();
     if (changes) {
-        const imagePaths = await getImagePaths(localPath);
-        logger.debug("Started conversion for updated images");
-        await Promise.all(
-            imagePaths.map((imagePath) => processImages(redisClient, imagePath))
-        );
+        await convertImages(false, redisClient);
     }
 }
 
@@ -137,11 +139,7 @@ export async function startAutoUpdate(interval = 300000) {
         logger.debug("Connected to Redis");
     }
 
-    const imagePaths = await getImagePaths(localPath);
-    logger.debug("Started initial conversion");
-    await Promise.all(
-        imagePaths.map((imagePath) => processImages(redis, imagePath))
-    );
+    await convertImages(true, redis);
 
     await runAutoUpdate(redis);
     logger.info("Starting auto-update of git repo...");

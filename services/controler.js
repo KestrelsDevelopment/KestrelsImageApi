@@ -8,18 +8,18 @@ const targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
 function getNearestResolution(requestedSize) {
     const reqNum = parseInt(requestedSize, 10);
     if (isNaN(reqNum)) return 'original';
-    const nearest = targetSizes.reduce((prev, curr) =>
-        Math.abs(curr - reqNum) < Math.abs(prev - reqNum) ? curr : prev
-    );
-    return `${nearest}x${nearest}`;
+    for (const current of targetSizes) {
+        if (current >= reqNum) return `${current}x${current}`
+    }
+    return 'original';
 }
 
 // Retrieve image from Redis and return binary Buffer
-async function getImage({ name, resolution: size }) {
+async function getImageBinary(imageAttributes) {
     const redisConnection = await establishRedis();
-    const redisKey = `image:${name}`;
+    const redisKey = `image:${imageAttributes.name}`;
     // If size is provided, find the nearest resolution; otherwise, use original
-    const resolution = size ? getNearestResolution(size) : 'original';
+    const resolution = imageAttributes.resolution ? getNearestResolution(imageAttributes.resolution) : 'original';
 
     try {
         await redisConnection.connect();
@@ -38,24 +38,15 @@ async function getImage({ name, resolution: size }) {
 }
 
 // Parse image data from the URL
-const getImageData = (uri) => {
+const getImageAttributes = (req) => {
     // Remove any leading slash
-    const trimmed = uri.startsWith('/') ? uri.slice(1) : uri;
-
-    // Split the URI on "?" to separate the filename from the query
-    let [name, query] = trimmed.split('?');
+    let name = req.baseUrl.slice(1);
 
     // Remove file extension if it exists (e.g., .png, .avif)
     name = name.replace(/\.[^.]+$/, "");
 
-    let resolution;
-    if (query) {
-        // Expecting query to be in the format "size=60"
-        const match = query.match(/size=(\d+)/);
-        if (match) {
-            resolution = match[1];
-        }
-    }
+    // get Resolution attribute
+    let resolution = req.query['size'];
 
     return { name, resolution };
 };
@@ -67,8 +58,8 @@ const images = async (req, res) => {
     logger.debug(`Incoming request from ${req.ip} for ${req.originalUrl}`);
 
     try {
-        const imageData = getImageData(req.originalUrl);
-        const image = await getImage(imageData);
+        const imageAttributes = getImageAttributes(req);
+        const image = await getImageBinary(imageAttributes);
 
         if (!image) {
             return res.status(404).send('Image not found');
