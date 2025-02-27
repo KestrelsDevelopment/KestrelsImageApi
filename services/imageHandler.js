@@ -116,6 +116,12 @@ async function processImages(redisClient, imagePath) {
 }
 
 async function convertImages(initial, redis) {
+
+    if (!redis.isOpen) {
+        await redis.connect();
+        logger.debug("Connected to Redis");
+    }
+
     const imagePaths = await getImagePaths(localPath);
     logger.debug(initial ? "Started initial conversion" : "Started conversion for updated images");
     await Promise.all(
@@ -134,10 +140,6 @@ export async function startAutoUpdate(interval = 300000) {
     await cloneRepo();
 
     const redis = await establishRedis();
-    if (!redis.isOpen) {
-        await redis.connect();
-        logger.debug("Connected to Redis");
-    }
 
     await convertImages(true, redis);
 
