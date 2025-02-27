@@ -115,7 +115,7 @@ async function processImages(redisClient, imagePath) {
     }
 }
 
-async function convertImages(initial, redis) {
+async function convertImages(redis) {
 
     if (!redis.isOpen) {
         await redis.connect();
@@ -123,7 +123,6 @@ async function convertImages(initial, redis) {
     }
 
     const imagePaths = await getImagePaths(localPath);
-    logger.debug(initial ? "Started initial conversion" : "Started conversion for updated images");
     await Promise.all(
         imagePaths.map((imagePath) => processImages(redis, imagePath))
     ).finally(() => redis.disconnect());
@@ -132,7 +131,7 @@ async function convertImages(initial, redis) {
 async function runAutoUpdate(redisClient) {
     const changes = await pullRepo();
     if (changes) {
-        await convertImages(false, redisClient);
+        await convertImages(redisClient);
     }
 }
 
@@ -141,7 +140,8 @@ export async function startAutoUpdate(interval = 300000) {
 
     const redis = await establishRedis();
 
-    await convertImages(true, redis);
+    logger.debug("Started initial conversion");
+    await convertImages(redis);
 
     await runAutoUpdate(redis);
     logger.info("Starting auto-update of git repo...");
