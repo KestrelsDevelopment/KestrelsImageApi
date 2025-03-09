@@ -84,7 +84,7 @@ async function processImages(redisClient, imagePath) {
             original: originalAvifBuffer.toString("base64"),
         };
 
-        const targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
+        const targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 6144, 8192];
 
         await Promise.all(
             targetSizes.map(async (size) => {
