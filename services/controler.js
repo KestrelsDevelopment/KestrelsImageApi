@@ -2,7 +2,7 @@ import establishRedis from '../services/redis.js';
 import logger from '../services/logger.js';
 
 // List of available target sizes
-const targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
+const targetSizes = [32, 64, 128, 256, 512, 1024, 2048, 4096, 6144, 8192];
 
 // Find the nearest available resolution given the requested size
 function getNearestResolution(requestedSize) {
