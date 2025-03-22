@@ -23,9 +23,8 @@ npm install
 Create a `.env` file in the project root and configure the following environment variables:
 
 ```
-IMAGE_FOLDER=./images
-CACHE_ENABLED=true
-CACHE_TTL=3600
+REPO_PATH=./images
+REPO_URL=YourImageGitREPO
 REDIS_URL=redis://localhost:6379
 PORT=3000
 ```
@@ -42,15 +41,15 @@ The API will be available at `http://localhost:3000/`.
 
 ## API Endpoints
 
-### `GET /images/:filename`
+### `GET /filename`
 Serves the original image from the configured folder.
 
-### `GET /images/:filename?width=WIDTH&height=HEIGHT`
+### `GET /filename?size=LARGES_SITE_OF_IMAGE`
 Returns a resized version of the image.
 
 #### Example Request:
 ```sh
-GET /images/sample.jpg?width=200&height=200
+GET /sample.jpg?size=200
 ```
 
 ## Logging
@@ -64,5 +63,5 @@ The API uses a logging system to track requests and errors. Logs are saved in a 
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the Apache-2.0 license.
 
