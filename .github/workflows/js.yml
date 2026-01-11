@@ -1,0 +1,23 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  check-js:
+    uses: KestrelsDevelopment/Workflows/.github/workflows/js-test.yml@main
+    with:
+      node_version: "20"
+
+      projects_glob: "**/package.json"
+
+      exclude_globs: |
+        **/node_modules/**
+        **/dist/**
+
+      run_lint: true
+      run_tests: true
