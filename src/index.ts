@@ -9,10 +9,18 @@ import { warmupService } from './Services/WarmupService/WarmupService.js';
 const app: Application = express();
 
 app.use(express.json());
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "blob:"],
+        },
+    },
+}));
 app.use(compression());
 
-app.use('/images', imageRouter);
+app.use('/', imageRouter);
 
 app.listen(config.port, async () => {
     logger.info(`Server is running in ${config.nodeEnv} mode on port "${config.port}"`);
