@@ -11,6 +11,8 @@ services:
     image: valkey/valkey:8.0-alpine
     container_name: image-cache
     command: valkey-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+     - 6379:6379
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 10s

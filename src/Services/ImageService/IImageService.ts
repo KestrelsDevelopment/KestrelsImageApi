@@ -5,4 +5,5 @@ export interface ImageResponse {
 
 export interface IImageService {
     getImage(filename: string, size?: number): Promise<ImageResponse>;
+    listImages(): Promise<string[]>;
 }

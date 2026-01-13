@@ -31,6 +31,16 @@ class ImageService implements IImageService {
             .toBuffer();
         return { data: buffer, format: metadata.format || 'png' };
     }
+
+    async listImages(): Promise<string[]> {
+        try {
+            const files = await fs.readdir(this.basePath);
+            // Filter for common image extensions
+            return files.filter(file => /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(file));
+        } catch (err) {
+            return [];
+        }
+    }
 }
 
 export const imageService: IImageService = new ImageService();

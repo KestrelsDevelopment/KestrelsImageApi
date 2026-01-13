@@ -4,6 +4,7 @@ import compression from "compression";
 import { logger } from './Services/Logger/Logger.js';
 import { config } from './Services/ConfigService/ConfigService.js';
 import { imageRouter } from './Router/ImageRouter.js';
+import { warmupService } from './Services/WarmupService/WarmupService.js';
 
 const app: Application = express();
 
@@ -13,7 +14,11 @@ app.use(compression());
 
 app.use('/images', imageRouter);
 
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
     logger.info(`Server is running in ${config.nodeEnv} mode on port "${config.port}"`);
-    logger.debug(`Redis connected to: ${config.redis.url}`);
+    
+    // Execute the warmup service
+    warmupService.run().catch(err => {
+        logger.error('Background warmup failed', err);
+    });
 });
