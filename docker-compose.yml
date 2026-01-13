@@ -3,6 +3,8 @@ services:
     image: ghcr.io/kestrelsdevelopment/kestrelsdev.imageapi
     environment:
       - REDIS_URL=redis://cache:6379
+    volumes:
+      - ./images:/images
     ports:
       - 3000:3000
   cache:

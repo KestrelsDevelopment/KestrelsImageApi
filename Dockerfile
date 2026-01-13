@@ -22,7 +22,7 @@ FROM gcr.io/distroless/nodejs22
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV REPO_PATH="/image"
+ENV REPO_PATH="/images"
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 EXPOSE 3000
