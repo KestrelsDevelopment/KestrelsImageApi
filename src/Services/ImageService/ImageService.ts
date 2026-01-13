@@ -17,9 +17,10 @@ class ImageService implements IImageService {
         const image = sharp(filePath);
         const metadata = await image.metadata();
         if (!size || (metadata.width && metadata.width <= size && metadata.height && metadata.height <= size)) {
-            return {
-                data: await fs.readFile(filePath),
-                format: metadata.format || 'png'
+            const ext = path.extname(filename).slice(1).toLowerCase();
+            return { 
+                data: await fs.readFile(filePath), 
+                format: metadata.format || (ext === 'jpg' ? 'jpeg' : ext) || 'png' 
             };
         }
         const targetSize = Math.max(16, Math.min(size, 8192));
@@ -35,7 +36,6 @@ class ImageService implements IImageService {
     async listImages(): Promise<string[]> {
         try {
             const files = await fs.readdir(this.basePath);
-            // Filter for common image extensions
             return files.filter(file => /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(file));
         } catch (err) {
             return [];

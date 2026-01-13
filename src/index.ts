@@ -9,15 +9,7 @@ import { warmupService } from './Services/WarmupService/WarmupService.js';
 const app: Application = express();
 
 app.use(express.json());
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    contentSecurityPolicy: {
-        directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "img-src": ["'self'", "data:", "blob:"],
-        },
-    },
-}));
+app.use(helmet());
 app.use(compression());
 
 app.use('/', imageRouter);

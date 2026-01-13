@@ -4,21 +4,28 @@ import { cacheService } from '../Services/CacheService/CacheService.js';
 import { logger } from '../Services/Logger/Logger.js';
 
 export const getProcessedImage = async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const { filename: rawFilename } = req.params;
+    
+    if (typeof rawFilename !== 'string' || !/\.(jpg|jpeg|png|webp|gif|avif)$/i.test(rawFilename)) {
+        return res.status(404).json({ error: 'Invalid image request' });
+    }
+    
+    const filename: string = rawFilename;
+
     const sizeStr = req.query.size as string | undefined;
     const size = sizeStr ? parseInt(sizeStr, 10) : undefined;
-
-    if (typeof filename !== 'string' || filename.length === 0) {
-        return res.status(400).json({ error: 'Filename is required' });
-    }
-
     const cacheKey = `img:${filename}:${size || 'orig'}`;
 
     try {
         const cached = await cacheService.get(cacheKey);
+        
+        const ext = filename.split('.').pop()?.toLowerCase() || 'png';
+        const mimeType = ext === 'jpg' ? 'jpeg' : ext;
+
         if (cached) {
             res.set('X-Cache', 'HIT');
-            return res.type('image/png').send(cached);
+            res.set('Content-Length', cached.length.toString());
+            return res.type(`image/${mimeType}`).send(cached);
         }
 
         const { data, format } = await imageService.getImage(filename, size);
@@ -26,6 +33,7 @@ export const getProcessedImage = async (req: Request, res: Response) => {
         await cacheService.set(cacheKey, data);
 
         res.set('X-Cache', 'MISS');
+        res.set('Content-Length', data.length.toString());
         res.type(`image/${format}`).send(data);
     } catch (error) {
         const msg = (error as Error).message;
