@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import sharp from 'sharp';
 import type { IImageService, ImageResponse } from './IImageService.js';
 import { config } from '../ConfigService/ConfigService.js';
+import {logger} from "../Logger/Logger.js";
 
 class ImageService implements IImageService {
     private readonly basePath = config.imageRepo.path;
@@ -38,6 +39,7 @@ class ImageService implements IImageService {
             const files = await fs.readdir(this.basePath);
             return files.filter(file => /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(file));
         } catch (err) {
+            logger.error('Failed to list images', err as Error);
             return [];
         }
     }
