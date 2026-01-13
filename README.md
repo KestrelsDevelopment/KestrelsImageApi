@@ -24,7 +24,6 @@ Create a `.env` file in the project root and configure the following environment
 
 ```
 REPO_PATH=./images
-REPO_URL=YourImageGitREPO
 REDIS_URL=redis://localhost:6379
 PORT=3000
 ```
