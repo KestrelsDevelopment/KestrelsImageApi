@@ -6,6 +6,6 @@ export interface IConfigService {
     };
     imageRepo: {
         path: string;
-        url: string;
+
     };
 }
