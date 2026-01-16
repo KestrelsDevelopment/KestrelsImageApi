@@ -16,8 +16,9 @@ KestrelsImageAPI is a lightweight Node.js-based API that reads image files from 
 Ensure you have [Node.js](https://nodejs.org/) installed, then clone this repository and install dependencies:
 
 ``
-sh git clone [https://github.com/yourusername/KestrelsImageAPI.git](https://github.com/yourusername/KestrelsImageAPI.git) 
-cd KestrelsImageAPI npm install
+sh git clone https://github.com/yourusername/KestrelsImageAPI.git
+cd KestrelsImageAPI 
+npm install
 ``
 
 ## Configuration
