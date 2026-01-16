@@ -8,4 +8,8 @@ export interface IConfigService {
         path: string;
 
     };
+    logger: {
+        level: string;
+        colorize: boolean;
+    }
 }

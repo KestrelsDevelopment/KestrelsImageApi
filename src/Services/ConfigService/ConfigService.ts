@@ -7,12 +7,20 @@ class ConfigService {
         this.config = this.validateAndLoad();
     }
 
-    private validateAndLoad(): IConfigService {
+    private validateAndLoad(): Readonly<{
+        port: number;
+        nodeEnv: "development" | "production" | "test";
+        redis: { url: string };
+        imageRepo: { path: string };
+        logger: { level: string; colorize: boolean }
+    }> {
         const {
             PORT,
             NODE_ENV,
             REDIS_URL,
-            REPO_PATH
+            REPO_PATH,
+            LOGLEVEL,
+            LOGCOLORIZE
         } = process.env;
 
         // Validation logic
@@ -28,6 +36,10 @@ class ConfigService {
             imageRepo: {
                 path: REPO_PATH,
             },
+            logger: {
+                level: LOGLEVEL || 'info',
+                colorize: LOGCOLORIZE !== 'false',
+            }
         });
     }
 

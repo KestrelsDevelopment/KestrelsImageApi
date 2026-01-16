@@ -11,12 +11,12 @@ const logFormat = printf(({ level, message, timestamp, stack, ...metadata }) => 
 
 const winstonInstance = winston.createLogger({
     // Use the validated nodeEnv from our config service
-    level: config.nodeEnv === 'production' ? 'info' : 'debug',
+    level: config.logger.level,
     format: combine(
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         errors({ stack: true }),
         // Toggle colors based on the environment config
-        config.nodeEnv !== 'production' ? colorize() : winston.format.uncolorize(),
+        config.logger.colorize ? colorize() : winston.format.uncolorize(),
         logFormat
     ),
     transports: [new winston.transports.Console()],
