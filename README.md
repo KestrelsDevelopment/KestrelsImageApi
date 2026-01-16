@@ -15,11 +15,11 @@ KestrelsImageAPI is a lightweight Node.js-based API that reads image files from 
 
 Ensure you have [Node.js](https://nodejs.org/) installed, then clone this repository and install dependencies:
 
-``
+```sh
 sh git clone https://github.com/yourusername/KestrelsImageAPI.git
 cd KestrelsImageAPI 
 npm install
-``
+```
 
 ## Configuration
 
@@ -35,14 +35,14 @@ Create a `.env` file in the project root and configure the following environment
 | `LOG_COLORIZE` | Enable colorized log output | `true` |
 
 ### Example `.env` file:
-``
+```env
 PORT=3000
 NODE_ENV=development 
 REDIS_URL=redis://localhost:6379 
 REPO_PATH=./images 
 LOG_LEVEL=info 
 LOG_COLORIZE=true
-``
+```
 
 
 ## Usage
@@ -50,13 +50,17 @@ LOG_COLORIZE=true
 ### Development
 
 Start the API server in development mode with:
-``sh npm start``
+```sh
+sh npm start
+```
 
 
 ### Docker
 
 You can also run the API using Docker Compose:
-``sh docker-compose up``
+```
+sh docker-compose up
+```
 
 
 The API will be available at `http://localhost:3000/`.
@@ -70,7 +74,9 @@ Serves the original image from the configured folder.
 Returns a resized version of the image where `size` specifies the largest dimension (width or height) in pixels. The aspect ratio is preserved.
 
 #### Example Request:
-``sh GET /sample.jpg?size=200``
+```sh
+sh GET /sample.jpg?size=200
+```
 
 This returns `sample.jpg` resized so its largest side is 200 pixels.
 
