@@ -1,34 +1,48 @@
 {
-  "name": "kestrelsimageapi",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "imageapi",
+  "version": "2.0.0",
+  "description": "A Typscript API That Serves Images of diferent sizes for web apps",
+  "homepage": "https://github.com/KestrelsDevelopment/ImageApi#readme",
+  "bugs": {
+    "url": "https://github.com/KestrelsDevelopment/ImageApi/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KestrelsDevelopment/KestrelsImageApi.git"
+    "url": "git+https://github.com/KestrelsDevelopment/ImageApi.git"
   },
-  "keywords": [],
-  "author": "Kessandra M. Winkelnkemper, Annika Leonie Keggenhoff",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
+  "author": "Annika Leonie Keggenhoff & Kessandra M. Winkelnkemper",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/KestrelsDevelopment/KestrelsImageApi/issues"
-  },
-  "homepage": "https://github.com/KestrelsDevelopment/KestrelsImageApi#readme",
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "redis": "^4.7.0",
-    "sharp": "^0.33.5",
-    "simple-git": "^3.27.0",
-    "winston": "^3.17.0"
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "@eslint/js": "^9.39.2",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
+    "@types/helmet": "^0.0.48",
+    "@types/node": "^25.0.6",
+    "@types/redis": "^4.0.10",
+    "@types/sharp": "^0.31.1",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
+    "jiti": "^2.6.1",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.52.0"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "redis": "^5.10.0",
+    "sharp": "^0.34.5",
+    "winston": "^3.19.0"
   }
 }

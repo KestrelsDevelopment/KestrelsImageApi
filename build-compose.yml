@@ -1,0 +1,6 @@
+services:
+  kestrelsdev.fileapi:
+    image: ghcr.io/kestrelsdevelopment/kestrelsdev.imageapi
+    build:
+      context: .
+      dockerfile: ./Dockerfile
